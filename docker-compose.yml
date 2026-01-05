@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm
+    ports:
+      - "8000:8000"
+    volumes:
+      # Cache models locally to avoid re-downloading
+      - vllm-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN:-}
+    # Default model: Qwen 2.5 14B (fits in 16GB with quantization)
+    command: >
+      --model Qwen/Qwen2.5-14B-Instruct
+      --dtype auto
+      --max-model-len 4096
+      --gpu-memory-utilization 0.90
+      --enable-prefix-caching
+      --served-model-name qwen2.5-14b
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s  # Model loading takes time
+
+volumes:
+  vllm-cache:

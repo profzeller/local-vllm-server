@@ -18,21 +18,22 @@ services:
               capabilities: [gpu]
     environment:
       - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN:-}
-    # Default model: Qwen 2.5 14B (fits in 16GB with quantization)
     command: >
-      --model Qwen/Qwen2.5-14B-Instruct
-      --dtype auto
-      --max-model-len 4096
-      --gpu-memory-utilization 0.90
+      --model ${VLLM_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}
+      --dtype ${VLLM_DTYPE:-auto}
+      --max-model-len ${VLLM_MAX_MODEL_LEN:-8192}
+      --gpu-memory-utilization ${VLLM_GPU_MEMORY_UTIL:-0.90}
       --enable-prefix-caching
-      --served-model-name qwen2.5-14b
+      --served-model-name ${VLLM_SERVED_NAME:-mistral-7b}
+      ${VLLM_QUANTIZATION:+--quantization ${VLLM_QUANTIZATION}}
+      ${VLLM_TENSOR_PARALLEL:+--tensor-parallel-size ${VLLM_TENSOR_PARALLEL}}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 120s  # Model loading takes time
+      start_period: 120s
 
 volumes:
   vllm-cache:

@@ -1,5 +1,7 @@
 # Local vLLM Server
 
+> Part of the [P16 GPU Server](https://github.com/profzeller/p16-server-setup) ecosystem
+
 High-throughput LLM inference server using vLLM with OpenAI-compatible API.
 
 Optimized for 16GB VRAM GPUs with 2-4x faster inference than Ollama for batch/concurrent workloads.
